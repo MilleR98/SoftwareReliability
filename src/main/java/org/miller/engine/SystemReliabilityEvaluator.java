@@ -1,9 +1,12 @@
-package org.miller;
+package org.miller.engine;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import java.util.function.BiFunction;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SystemReliabilityEvaluator implements BiFunction<String, Boolean[], Boolean> {
 
   private static final String ELEMENT_LABEL = "E";
@@ -11,12 +14,14 @@ public class SystemReliabilityEvaluator implements BiFunction<String, Boolean[],
   private final Binding binding = new Binding();
   private final GroovyShell shellEvaluator = new GroovyShell(binding);
 
-  private SystemReliabilityEvaluator() {
-  }
-
   public static SystemReliabilityEvaluator getInstance() {
 
     return INSTANCE;
+  }
+
+  public static int findNumberOfElements(String elementsSchemaEquation){
+
+    return (int) elementsSchemaEquation.chars().filter(ch -> ch == 'E').count();
   }
 
   @Override
