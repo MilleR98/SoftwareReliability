@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -20,14 +22,22 @@
                               <Insets left="450.0" />
                            </VBox.margin>
                         </Button>
-                        <AnchorPane style="-fx-background-color: F4FFFB;" prefHeight="1200.0" prefWidth="1500.0" fx:id="graphContainer"/>
+                        <AnchorPane fx:id="graphContainer" prefHeight="1200.0" prefWidth="1500.0" style="-fx-background-color: F4FFFB;" />
                      </children>
                   </VBox>
                </content>
           </Tab>
             <Tab text="Equations System">
               <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="equationsTable" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <columns>
+                            <TableColumn fx:id="equationColumn" minWidth="700.0" prefWidth="75.0" text="Equation" />
+                            <TableColumn fx:id="statusColumn" minWidth="100.0" prefWidth="75.0" text="System State" />
+                          </columns>
+                        </TableView>
+                     </children></AnchorPane>
               </content>
             </Tab>
         </tabs>

@@ -6,5 +6,6 @@ module org.miller {
     requires static lombok;
 
     opens org.miller.controller to javafx.fxml;
+    opens org.miller.model to javafx.base;
     exports org.miller;
 }

@@ -16,17 +16,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.miller.engine.SystemGraphComposer;
+import org.miller.model.NodeEquation;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
 
 public class GraphViewService {
 
-  private static Integer counter;
+  private static Integer nodeIdCounter;
   private final SystemGraphComposer systemGraphComposer = new SystemGraphComposer();
 
   public Tuple2<SmartGraphPanel<StateNode, StateEdge>, DigraphEdgeList<StateNode, StateEdge>> createGraphView(String elementsSchemaEquation) {
 
-    counter = 1;
+    nodeIdCounter = 1;
 
     var graph = new DigraphEdgeList<StateNode, StateEdge>();
     var rootNode = systemGraphComposer.buildSystemStatesGraph(elementsSchemaEquation);
@@ -79,16 +80,16 @@ public class GraphViewService {
     try {
 
       graph.insertVertex(stateNode);
-      stateNode.setId(counter);
-      counter += 1;
+      stateNode.setId(nodeIdCounter);
+      nodeIdCounter += 1;
     } catch (InvalidVertexException ignored) {
 
     }
   }
 
-  public List<Tuple2<String, Boolean>> getNodeEquations(DigraphEdgeList<StateNode, StateEdge> digraph) {
+  public List<NodeEquation> getNodeEquations(DigraphEdgeList<StateNode, StateEdge> digraph) {
 
-    List<Tuple2<String, Boolean>> nodeEquations = new ArrayList<>();
+    List<NodeEquation> nodeEquations = new ArrayList<>();
     for (Vertex<StateNode> vertex : digraph.vertices().stream().sorted(Comparator.comparingInt(v -> v.element().getId())).collect(Collectors.toList())) {
 
       var equation = new StringBuilder("P" + vertex.element().getId() + "(t)/dt = ");
@@ -132,8 +133,29 @@ public class GraphViewService {
         equation.append(")*P").append(vertex.element().getId()).append("(t)");
       }
 
-      nodeEquations.add(new Tuple2<>(equation.toString(), vertex.element().isWorking()));
+      nodeEquations.add(new NodeEquation(vertex.element().getId(), equation.toString(), vertex.element().isWorking() ? "Works" : "Fail"));
     }
+
+    nodeEquations.add(new NodeEquation(0, "", ""));
+    nodeEquations.add(new NodeEquation(0, "Probability of failure-free operation:", ""));
+
+    var worksNodes = nodeEquations.stream().filter(nodeEquation -> nodeEquation.getStatus().equals("Works")).collect(Collectors.toList());
+
+    var failureFreeOperationEquation = new StringBuilder("P(t) = ");
+
+    int counter = 0;
+    for (var worksNode : worksNodes) {
+
+      if (counter != 0) {
+
+        failureFreeOperationEquation.append("+");
+      }
+
+      failureFreeOperationEquation.append("P").append(worksNode.getId()).append("(t)");
+
+      ++counter;
+    }
+    nodeEquations.add(new NodeEquation(0, failureFreeOperationEquation.toString(), ""));
 
     return nodeEquations;
   }

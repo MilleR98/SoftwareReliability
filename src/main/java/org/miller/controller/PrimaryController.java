@@ -1,17 +1,15 @@
 package org.miller.controller;
 
 import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
-import com.brunomnsilva.smartgraph.graph.Edge;
-import com.brunomnsilva.smartgraph.graph.Vertex;
-import groovy.lang.Tuple2;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import org.miller.model.NodeEquation;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
 import org.miller.service.GraphViewService;
@@ -23,10 +21,20 @@ public class PrimaryController {
   private String elementsSchemaEquation;
   @FXML
   private AnchorPane graphContainer;
+  @FXML
+  private TableView<NodeEquation> equationsTable;
+  @FXML
+  private TableColumn<NodeEquation, String> equationColumn;
+  @FXML
+  private TableColumn<NodeEquation, String> statusColumn;
 
   @FXML
   public void initialize() {
 
+    equationColumn.setCellValueFactory(new PropertyValueFactory<>("equation"));
+    statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+    equationColumn.setSortable(false);
+    statusColumn.setSortable(false);
   }
 
   @FXML
@@ -51,6 +59,8 @@ public class PrimaryController {
       graphContainer.getChildren().add(graphPanel);
 
       graphPanel.init();
+
+      equationsTable.setItems(FXCollections.observableArrayList(graphViewService.getNodeEquations(digraph)));
     });
   }
 }
