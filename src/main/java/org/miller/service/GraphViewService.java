@@ -2,15 +2,21 @@ package org.miller.service;
 
 import com.brunomnsilva.smartgraph.graph.Digraph;
 import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
+import com.brunomnsilva.smartgraph.graph.Edge;
 import com.brunomnsilva.smartgraph.graph.InvalidEdgeException;
 import com.brunomnsilva.smartgraph.graph.InvalidVertexException;
+import com.brunomnsilva.smartgraph.graph.Vertex;
 import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphProperties;
 import groovy.lang.Tuple2;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.miller.engine.SystemGraphComposer;
+import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
 
 public class GraphViewService {
@@ -18,11 +24,11 @@ public class GraphViewService {
   private static Integer counter;
   private final SystemGraphComposer systemGraphComposer = new SystemGraphComposer();
 
-  public SmartGraphPanel<StateNode, String> createGraphView(String elementsSchemaEquation) {
+  public Tuple2<SmartGraphPanel<StateNode, StateEdge>, DigraphEdgeList<StateNode, StateEdge>> createGraphView(String elementsSchemaEquation) {
 
     counter = 1;
 
-    var graph = new DigraphEdgeList<StateNode, String>();
+    var graph = new DigraphEdgeList<StateNode, StateEdge>();
     var rootNode = systemGraphComposer.buildSystemStatesGraph(elementsSchemaEquation);
     buildParts(Set.of(rootNode), graph);
 
@@ -35,10 +41,10 @@ public class GraphViewService {
         .filter(stateNodeVertex -> !stateNodeVertex.element().isWorking())
         .forEach(stateNodeVertex -> graphView.getStylableVertex(stateNodeVertex).setStyleClass("not-working-state"));
 
-    return graphView;
+    return new Tuple2<>(graphView, graph);
   }
 
-  private void buildParts(Set<StateNode> nodes, Digraph<StateNode, String> graph) {
+  private void buildParts(Set<StateNode> nodes, Digraph<StateNode, StateEdge> graph) {
 
     for (StateNode stateNode : nodes) {
 
@@ -47,32 +53,28 @@ public class GraphViewService {
 
     for (StateNode stateNode : nodes) {
 
-      for (var outcomingEdge : stateNode.getOutcomingEdges()) {
+      for (var outcomingEdge : stateNode.getOuboundEdges()) {
 
         tryInsertVertex(graph, outcomingEdge.getV2());
 
         tryInsertEdge(graph, stateNode, outcomingEdge);
       }
 
-      buildParts(stateNode.getOutcomingEdges().stream().map(Tuple2::getV2).collect(Collectors.toSet()), graph);
+      buildParts(stateNode.getOuboundEdges().stream().map(Tuple2::getV2).collect(Collectors.toSet()), graph);
     }
   }
 
-  private void tryInsertEdge(Digraph<StateNode, String> graph, StateNode n, Tuple2<String, StateNode> outcomingEdge) {
+  private void tryInsertEdge(Digraph<StateNode, StateEdge> graph, StateNode n, Tuple2<StateEdge, StateNode> outcomingEdge) {
     try {
 
-      graph.insertEdge(n, outcomingEdge.getV2(), getEdgeLabel(n, outcomingEdge));
+      outcomingEdge.getV1().setLabel("(" + n.getId() + "->" + outcomingEdge.getV2().getId() + ") ");
+      graph.insertEdge(n, outcomingEdge.getV2(), outcomingEdge.getV1());
     } catch (InvalidEdgeException ignored) {
 
     }
   }
 
-  private String getEdgeLabel(StateNode n, Tuple2<String, StateNode> outcomingEdge) {
-
-    return "(" + n.getId() + "->" + outcomingEdge.getV2().getId() + ") " + outcomingEdge.getV1();
-  }
-
-  private void tryInsertVertex(Digraph<StateNode, String> graph, StateNode stateNode) {
+  private void tryInsertVertex(Digraph<StateNode, StateEdge> graph, StateNode stateNode) {
 
     try {
 
@@ -82,5 +84,57 @@ public class GraphViewService {
     } catch (InvalidVertexException ignored) {
 
     }
+  }
+
+  public List<Tuple2<String, Boolean>> getNodeEquations(DigraphEdgeList<StateNode, StateEdge> digraph) {
+
+    List<Tuple2<String, Boolean>> nodeEquations = new ArrayList<>();
+    for (Vertex<StateNode> vertex : digraph.vertices().stream().sorted(Comparator.comparingInt(v -> v.element().getId())).collect(Collectors.toList())) {
+
+      var equation = new StringBuilder("P" + vertex.element().getId() + "(t)/dt = ");
+
+      var inboundEdges = digraph.incidentEdges(vertex);
+
+      if (!inboundEdges.isEmpty()) {
+
+        equation.append("+");
+      }
+
+      int counter = 0;
+      for (Edge<StateEdge, StateNode> edge : inboundEdges) {
+
+        if (counter != 0) {
+
+          equation.append("+");
+        }
+
+        equation.append(edge.element().getValue()).append("*P").append(edge.vertices()[0].element().getId()).append("(t)");
+
+        ++counter;
+      }
+
+      var outboundEdges = digraph.outboundEdges(vertex);
+      if (!outboundEdges.isEmpty()) {
+
+        equation.append("-(");
+        counter = 0;
+        for (Edge<StateEdge, StateNode> edge : outboundEdges) {
+
+          if (counter != 0) {
+
+            equation.append("+");
+          }
+
+          equation.append(edge.element().getValue());
+          ++counter;
+        }
+
+        equation.append(")*P").append(vertex.element().getId()).append("(t)");
+      }
+
+      nodeEquations.add(new Tuple2<>(equation.toString(), vertex.element().isWorking()));
+    }
+
+    return nodeEquations;
   }
 }

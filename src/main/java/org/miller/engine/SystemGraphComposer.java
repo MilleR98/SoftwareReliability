@@ -2,6 +2,7 @@ package org.miller.engine;
 
 import groovy.lang.Tuple2;
 import java.util.Arrays;
+import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
 
 public class SystemGraphComposer {
@@ -36,8 +37,8 @@ public class SystemGraphComposer {
 
           nextState[i] = false;
 
-          var childNodePair = new Tuple2<>("λ" + (i + 1), fillNode(nextState, elementsSchemaEquation));
-          stateNode.getOutcomingEdges().add(childNodePair);
+          var childNodePair = new Tuple2<>(new StateEdge(null, "λ" + (i + 1)), fillNode(nextState, elementsSchemaEquation));
+          stateNode.getOuboundEdges().add(childNodePair);
         }
       }
     }

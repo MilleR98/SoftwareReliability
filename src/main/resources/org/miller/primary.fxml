@@ -13,19 +13,19 @@
         <tabs>
           <Tab text="Graph View">
                <content>
-                  <VBox id="graph-container" prefHeight="800.0">
+                  <VBox id="graph-container">
                      <children>
                         <Button mnemonicParsing="false" onAction="#openAddSchemaModal" text="Enter elements scheme" textAlignment="CENTER">
                            <VBox.margin>
                               <Insets left="450.0" />
                            </VBox.margin>
                         </Button>
-                        <AnchorPane style="-fx-background-color: F4FFFB;" prefHeight="800.0" prefWidth="1500.0" fx:id="graphContainer"/>
+                        <AnchorPane style="-fx-background-color: F4FFFB;" prefHeight="1200.0" prefWidth="1500.0" fx:id="graphContainer"/>
                      </children>
                   </VBox>
                </content>
           </Tab>
-            <Tab text="Untitled Tab">
+            <Tab text="Equations System">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
               </content>

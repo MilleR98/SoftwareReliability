@@ -17,8 +17,7 @@ public class StateNode implements Vertex<StateNode> {
   private boolean isWorking;
   @EqualsAndHashCode.Include
   private Boolean[] state;
-  private Set<Tuple2<String, StateNode>> incomingEdges = new HashSet<>();
-  private Set<Tuple2<String, StateNode>> outcomingEdges = new HashSet<>();
+  private Set<Tuple2<StateEdge, StateNode>> ouboundEdges = new HashSet<>();
   private String stateEquation;
 
   @Override
