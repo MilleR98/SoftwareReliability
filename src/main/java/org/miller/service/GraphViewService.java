@@ -1,24 +1,41 @@
 package org.miller.service;
 
 import com.brunomnsilva.smartgraph.graph.Digraph;
+import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
 import com.brunomnsilva.smartgraph.graph.InvalidEdgeException;
 import com.brunomnsilva.smartgraph.graph.InvalidVertexException;
+import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrategy;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphProperties;
 import groovy.lang.Tuple2;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.miller.engine.SystemGraphComposer;
 import org.miller.model.StateNode;
 
 public class GraphViewService {
 
   private static Integer counter;
+  private final SystemGraphComposer systemGraphComposer = new SystemGraphComposer();
 
-  public void fillGraphForView(Digraph<StateNode, String> graph, StateNode rootState) {
-
-    graph.vertices().forEach(graph::removeVertex);
-    graph.edges().forEach(graph::removeEdge);
+  public SmartGraphPanel<StateNode, String> createGraphView(String elementsSchemaEquation) {
 
     counter = 1;
-    buildParts(Set.of(rootState), graph);
+
+    var graph = new DigraphEdgeList<StateNode, String>();
+    var rootNode = systemGraphComposer.buildSystemStatesGraph(elementsSchemaEquation);
+    buildParts(Set.of(rootNode), graph);
+
+    var smartGraphProperties = new SmartGraphProperties(getClass().getClassLoader().getResourceAsStream("smartgraph.properties"));
+    var graphView = new SmartGraphPanel<>(graph, smartGraphProperties, new SmartCircularSortedPlacementStrategy());
+    graphView.getStylesheets().add(getClass().getClassLoader().getResource("smartgraph.css").toExternalForm());
+    graphView.setAutomaticLayout(true);
+
+    graph.vertices().stream()
+        .filter(stateNodeVertex -> !stateNodeVertex.element().isWorking())
+        .forEach(stateNodeVertex -> graphView.getStylableVertex(stateNodeVertex).setStyleClass("not-working-state"));
+
+    return graphView;
   }
 
   private void buildParts(Set<StateNode> nodes, Digraph<StateNode, String> graph) {
@@ -45,7 +62,7 @@ public class GraphViewService {
     try {
 
       graph.insertEdge(n, outcomingEdge.getV2(), getEdgeLabel(n, outcomingEdge));
-    }catch (InvalidEdgeException ignored){
+    } catch (InvalidEdgeException ignored) {
 
     }
   }

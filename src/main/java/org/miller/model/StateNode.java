@@ -24,7 +24,7 @@ public class StateNode implements Vertex<StateNode> {
   @Override
   public String toString() {
 
-    return "{" + id + ", " + (isWorking ? "Working" : "Fault") + ", " + binaryState() + "}";
+    return id + ", " + binaryState();
   }
 
   private String binaryState() {

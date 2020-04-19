@@ -20,7 +20,7 @@
                               <Insets left="450.0" />
                            </VBox.margin>
                         </Button>
-                        <AnchorPane style="-fx-background-color: F4FFFB;" prefHeight="700.0" prefWidth="1000.0" fx:id="graphContainer"/>
+                        <AnchorPane style="-fx-background-color: F4FFFB;" prefHeight="800.0" prefWidth="1500.0" fx:id="graphContainer"/>
                      </children>
                   </VBox>
                </content>
