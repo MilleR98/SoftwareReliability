@@ -12,13 +12,15 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
 import org.miller.engine.SystemGraphComposer;
 import org.miller.model.StateNode;
+import org.miller.service.GraphViewService;
 
 public class PrimaryController {
 
+  private final SystemGraphComposer systemGraphComposer = new SystemGraphComposer();
+  private final GraphViewService graphViewService = new GraphViewService();
+  private final Digraph<StateNode, String> graph = new DigraphEdgeList<>();
   private boolean isGraphInit = false;
-  private SmartGraphPanel<String, String> graphView;
-  private SystemGraphComposer systemGraphComposer = new SystemGraphComposer();
-  private Digraph<String, String> graph = new DigraphEdgeList<>();
+  private SmartGraphPanel<StateNode, String> graphView;
   private String elementsSchemaEquation;
   @FXML
   private AnchorPane graphContainer;
@@ -29,10 +31,10 @@ public class PrimaryController {
     SmartPlacementStrategy strategy = new SmartCircularSortedPlacementStrategy();
     SmartGraphProperties smartGraphProperties = new SmartGraphProperties(getClass().getClassLoader().getResourceAsStream("smartgraph.properties"));
     graphView = new SmartGraphPanel<>(graph, smartGraphProperties, strategy);
-
-    graphView.setPrefHeight(600);
-    graphView.setPrefWidth(1000);
+    graphView.setPrefHeight(800);
+    graphView.setPrefWidth(2000);
     graphView.getStylesheets().add(getClass().getClassLoader().getResource("smartgraph.css").toExternalForm());
+    graphView.setAutomaticLayout(true);
 
     graphContainer.getChildren().add(graphView);
   }
@@ -49,36 +51,16 @@ public class PrimaryController {
 
     dialog.showAndWait().ifPresent(name -> this.elementsSchemaEquation = name);
 
-    var rootNode = systemGraphComposer.buildSystemStatesGraph(this.elementsSchemaEquation);
+    graphViewService.fillGraphForView(graph, systemGraphComposer.buildSystemStatesGraph(this.elementsSchemaEquation));
 
-   /* graph.vertices().forEach(graph::removeVertex);
-    graph.edges().forEach(graph::removeEdge);
-
-    graph.insertVertex("1");
-    graph.insertVertex("2");
-    graph.insertVertex("3");
-    graph.insertVertex("4");
-    graph.insertVertex("5");
-    graph.insertVertex("6");
-    graph.insertVertex("7");
-
-    graph.insertEdge("1", "2", "λ1");
-    graph.insertEdge("1", "3", "λ2");
-    graph.insertEdge("1", "4", "λ3");
-
-    graph.insertEdge("3", "5", "λ4");
-    graph.insertEdge("3", "6", "λ5");
-
-    graph.insertEdge("4", "7", "λ6");
-
-    if(!isGraphInit){
+    if (!isGraphInit) {
 
       graphView.init();
       graphView.update();
       isGraphInit = true;
-    }else {
+    } else {
 
       graphView.update();
-    }*/
+    }
   }
 }
