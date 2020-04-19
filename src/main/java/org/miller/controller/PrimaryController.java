@@ -10,11 +10,14 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
+import org.miller.engine.SystemGraphComposer;
+import org.miller.model.StateNode;
 
 public class PrimaryController {
 
   private boolean isGraphInit = false;
   private SmartGraphPanel<String, String> graphView;
+  private SystemGraphComposer systemGraphComposer = new SystemGraphComposer();
   private Digraph<String, String> graph = new DigraphEdgeList<>();
   private String elementsSchemaEquation;
   @FXML
@@ -46,7 +49,9 @@ public class PrimaryController {
 
     dialog.showAndWait().ifPresent(name -> this.elementsSchemaEquation = name);
 
-    graph.vertices().forEach(graph::removeVertex);
+    var rootNode = systemGraphComposer.buildSystemStatesGraph(this.elementsSchemaEquation);
+
+   /* graph.vertices().forEach(graph::removeVertex);
     graph.edges().forEach(graph::removeEdge);
 
     graph.insertVertex("1");
@@ -72,9 +77,8 @@ public class PrimaryController {
       graphView.update();
       isGraphInit = true;
     }else {
-      graphView.update();
-    }
 
-    graphView.update();
+      graphView.update();
+    }*/
   }
 }
