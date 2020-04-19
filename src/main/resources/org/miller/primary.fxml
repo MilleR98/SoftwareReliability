@@ -10,37 +10,52 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox prefHeight="800.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.miller.controller.PrimaryController">
-   <children>
-      <TabPane tabClosingPolicy="UNAVAILABLE">
-        <tabs>
-          <Tab text="Graph View">
-               <content>
-                  <VBox id="graph-container">
-                     <children>
-                        <Button mnemonicParsing="false" onAction="#openAddSchemaModal" text="Enter elements scheme" textAlignment="CENTER">
-                           <VBox.margin>
-                              <Insets left="450.0" />
-                           </VBox.margin>
-                        </Button>
-                        <AnchorPane fx:id="graphContainer" prefHeight="1200.0" prefWidth="1500.0" style="-fx-background-color: F4FFFB;" />
-                     </children>
-                  </VBox>
-               </content>
-          </Tab>
-            <Tab text="Equations System">
-              <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <TableView fx:id="equationsTable" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columns>
-                            <TableColumn fx:id="equationColumn" minWidth="700.0" prefWidth="75.0" text="Equation" />
-                            <TableColumn fx:id="statusColumn" minWidth="100.0" prefWidth="75.0" text="System State" />
-                          </columns>
-                        </TableView>
-                     </children></AnchorPane>
-              </content>
-            </Tab>
-        </tabs>
-      </TabPane>
-   </children>
+  <children>
+    <TabPane tabClosingPolicy="UNAVAILABLE">
+      <tabs>
+        <Tab text="Graph View">
+          <content>
+            <VBox id="graph-container">
+              <children>
+                <Button mnemonicParsing="false" onAction="#openAddSchemaModal" text="Enter elements scheme" textAlignment="CENTER">
+                  <VBox.margin>
+                    <Insets left="450.0"/>
+                  </VBox.margin>
+                </Button>
+                <AnchorPane fx:id="graphContainer" prefHeight="1000.0" prefWidth="1500.0" style="-fx-background-color: F4FFFB;"/>
+              </children>
+            </VBox>
+          </content>
+        </Tab>
+        <Tab text="Equations System">
+          <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+              <children>
+                <TableView fx:id="equationsTable" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                  AnchorPane.topAnchor="0.0">
+                  <columns>
+                    <TableColumn fx:id="idColumn" minWidth="50.0" prefWidth="50.0" text="№"/>
+                    <TableColumn fx:id="equationColumn" minWidth="700.0" prefWidth="75.0" text="Equation"/>
+                    <TableColumn fx:id="statusColumn" minWidth="100.0" prefWidth="75.0" text="System State"/>
+                  </columns>
+                </TableView>
+              </children>
+            </AnchorPane>
+          </content>
+        </Tab>
+        <Tab text="Calculations">
+          <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            </AnchorPane>
+          </content>
+        </Tab>
+        <Tab text="Charts">
+          <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            </AnchorPane>
+          </content>
+        </Tab>
+      </tabs>
+    </TabPane>
+  </children>
 </VBox>

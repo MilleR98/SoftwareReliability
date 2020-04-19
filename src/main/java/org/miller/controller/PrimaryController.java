@@ -27,14 +27,18 @@ public class PrimaryController {
   private TableColumn<NodeEquation, String> equationColumn;
   @FXML
   private TableColumn<NodeEquation, String> statusColumn;
+  @FXML
+  private TableColumn<NodeEquation, Integer> idColumn;
 
   @FXML
   public void initialize() {
 
     equationColumn.setCellValueFactory(new PropertyValueFactory<>("equation"));
     statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+    idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
     equationColumn.setSortable(false);
     statusColumn.setSortable(false);
+    idColumn.setSortable(false);
   }
 
   @FXML
