@@ -68,8 +68,12 @@ public class GraphViewService {
   private void tryInsertEdge(Digraph<StateNode, StateEdge> graph, StateNode n, Tuple2<StateEdge, StateNode> outcomingEdge) {
     try {
 
-      outcomingEdge.getV1().setLabel("(" + n.getId() + "->" + outcomingEdge.getV2().getId() + ") ");
-      graph.insertEdge(n, outcomingEdge.getV2(), outcomingEdge.getV1());
+      if(!(n.getId() == 0 && outcomingEdge.getV2().getId() == 0)){
+
+        outcomingEdge.getV1().setLabel("(" + n.getId() + "->" + outcomingEdge.getV2().getId() + ") ");
+        graph.insertEdge(n, outcomingEdge.getV2(), outcomingEdge.getV1());
+      }
+
     } catch (InvalidEdgeException ignored) {
 
     }
@@ -95,11 +99,6 @@ public class GraphViewService {
       var equation = new StringBuilder("P" + vertex.element().getId() + "(t)/dt = ");
 
       var inboundEdges = digraph.incidentEdges(vertex);
-
-      if (!inboundEdges.isEmpty()) {
-
-        equation.append("+");
-      }
 
       int counter = 0;
       for (Edge<StateEdge, StateNode> edge : inboundEdges) {
