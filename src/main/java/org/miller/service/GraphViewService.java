@@ -15,7 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.miller.engine.SystemGraphComposer;
+import org.miller.engine.GraphComposer;
 import org.miller.model.NodeEquation;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
@@ -23,11 +23,11 @@ import org.miller.model.StateNode;
 public class GraphViewService {
 
   private static Integer nodeIdCounter;
-  private final SystemGraphComposer systemGraphComposer = new SystemGraphComposer();
+  private final GraphComposer systemGraphComposer = new GraphComposer();
 
   public Tuple2<SmartGraphPanel<StateNode, StateEdge>, DigraphEdgeList<StateNode, StateEdge>> createGraphView(String elementsSchemaEquation) {
 
-    nodeIdCounter = 1;
+    nodeIdCounter = 0;
 
     var graph = new DigraphEdgeList<StateNode, StateEdge>();
     var rootNode = systemGraphComposer.buildSystemStatesGraph(elementsSchemaEquation);
@@ -54,14 +54,14 @@ public class GraphViewService {
 
     for (StateNode stateNode : nodes) {
 
-      for (var outcomingEdge : stateNode.getOuboundEdges()) {
+      for (var outboundEdge : stateNode.getOutboundEdges()) {
 
-        tryInsertVertex(graph, outcomingEdge.getV2());
+        tryInsertVertex(graph, outboundEdge.getV2());
 
-        tryInsertEdge(graph, stateNode, outcomingEdge);
+        tryInsertEdge(graph, stateNode, outboundEdge);
       }
 
-      buildParts(stateNode.getOuboundEdges().stream().map(Tuple2::getV2).collect(Collectors.toSet()), graph);
+      buildParts(stateNode.getOutboundEdges().stream().map(Tuple2::getV2).collect(Collectors.toSet()), graph);
     }
   }
 
@@ -70,7 +70,13 @@ public class GraphViewService {
 
       if(!(n.getId() == 0 && outcomingEdge.getV2().getId() == 0)){
 
-        outcomingEdge.getV1().setLabel("(" + n.getId() + "->" + outcomingEdge.getV2().getId() + ") ");
+        int outId = outcomingEdge.getV2().getId();
+        if(outId == 0){
+          outId = graph.vertices().stream().map(Vertex::element)
+              .filter(v -> v.equals(outcomingEdge.getV2())).findFirst()
+              .map(StateNode::getId).orElse(0);
+        }
+        outcomingEdge.getV1().setLabel("(" + n.getId() + "->" + outId + ") ");
         graph.insertEdge(n, outcomingEdge.getV2(), outcomingEdge.getV1());
       }
 
@@ -96,7 +102,7 @@ public class GraphViewService {
     List<NodeEquation> nodeEquations = new ArrayList<>();
     for (Vertex<StateNode> vertex : digraph.vertices().stream().sorted(Comparator.comparingInt(v -> v.element().getId())).collect(Collectors.toList())) {
 
-      var equation = new StringBuilder("P" + vertex.element().getId() + "(t)/dt = ");
+      var equation = new StringBuilder("dP[" + vertex.element().getId() + "](t)/dt = ");
 
       var inboundEdges = digraph.incidentEdges(vertex);
 
@@ -108,7 +114,7 @@ public class GraphViewService {
           equation.append("+");
         }
 
-        equation.append(edge.element().getValue()).append("*P").append(edge.vertices()[0].element().getId()).append("(t)");
+        equation.append(edge.element().getValue()).append("*P[").append(edge.vertices()[0].element().getId()).append("](t)");
 
         ++counter;
       }
@@ -129,7 +135,7 @@ public class GraphViewService {
           ++counter;
         }
 
-        equation.append(")*P").append(vertex.element().getId()).append("(t)");
+        equation.append(")*P[").append(vertex.element().getId()).append("](t)");
       }
 
       nodeEquations.add(new NodeEquation(vertex.element().getId(), equation.toString(), vertex.element().isWorking() ? "Works" : "Fail"));
@@ -150,7 +156,7 @@ public class GraphViewService {
         failureFreeOperationEquation.append("+");
       }
 
-      failureFreeOperationEquation.append("P").append(worksNode.getId()).append("(t)");
+      failureFreeOperationEquation.append("P[").append(worksNode.getId()).append("](t)");
 
       ++counter;
     }

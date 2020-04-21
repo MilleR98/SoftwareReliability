@@ -2,30 +2,28 @@ package org.miller.engine;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import java.util.function.BiFunction;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class SystemReliabilityEvaluator implements BiFunction<String, Boolean[], Boolean> {
+public class Evaluator {
 
   private static final String ELEMENT_LABEL = "E";
-  private static final SystemReliabilityEvaluator INSTANCE = new SystemReliabilityEvaluator();
+  private static final Evaluator INSTANCE = new Evaluator();
   private final Binding binding = new Binding();
   private final GroovyShell shellEvaluator = new GroovyShell(binding);
 
-  public static SystemReliabilityEvaluator getInstance() {
+  public static Evaluator getInstance() {
 
     return INSTANCE;
   }
 
-  public static int findNumberOfElements(String elementsSchemaEquation){
+  public static int findNumberOfElements(String elementsSchemaEquation) {
 
     return (int) elementsSchemaEquation.chars().filter(ch -> ch == 'E').count();
   }
 
-  @Override
-  public Boolean apply(String elementsSchemaEquation, Boolean[] elementsState) {
+  public boolean evaluateWorkState(String elementsSchemaEquation, Boolean[] elementsState) {
 
     for (int i = 0; i < elementsState.length; i++) {
 
@@ -33,5 +31,16 @@ public class SystemReliabilityEvaluator implements BiFunction<String, Boolean[],
     }
 
     return Boolean.parseBoolean(shellEvaluator.evaluate(elementsSchemaEquation).toString());
+  }
+
+  public double evaluateFunctions(String function, double[] lambdas, double[] dxdy, double[] y) {
+
+    binding.setVariable("λ", lambdas);
+    binding.setVariable("dP", dxdy);
+    binding.setVariable("P", y);
+
+    String pureExpression = function.replace("(t)", "").replace("/dt", "");
+
+    return Double.parseDouble(shellEvaluator.evaluate(pureExpression).toString());
   }
 }

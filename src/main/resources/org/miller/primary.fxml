@@ -24,14 +24,14 @@
       <tabs>
         <Tab text="Graph View">
           <content>
-            <VBox id="graph-container">
+            <VBox>
               <children>
                 <Button alignment="CENTER" mnemonicParsing="false" onAction="#openAddSchemaModal" prefWidth="2000.0" text="Enter elements scheme" textAlignment="CENTER" VBox.vgrow="SOMETIMES">
                   <VBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                   </VBox.margin>
                 </Button>
-                <AnchorPane fx:id="graphContainer" prefHeight="950.0" prefWidth="1500.0" style="-fx-background-color: F4FFFB;" />
+                <AnchorPane fx:id="graphContainer" prefHeight="900.0" prefWidth="1500.0" style="-fx-background-color: F4FFFB;" />
               </children>
             </VBox>
           </content>
@@ -95,7 +95,7 @@
                     </Button>
                   </children>
                 </GridPane>
-                <HBox prefHeight="700.0">
+                <HBox prefHeight="750.0">
                   <children>
                     <TableView fx:id="lambdaTable" minWidth="155.0" prefWidth="170.0">
                       <columns>

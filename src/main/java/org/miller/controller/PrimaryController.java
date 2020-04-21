@@ -1,8 +1,13 @@
 package org.miller.controller;
 
 import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,11 +21,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.converter.DoubleStringConverter;
-import org.miller.engine.SystemReliabilityEvaluator;
+import org.miller.engine.Evaluator;
 import org.miller.model.Lambda;
 import org.miller.model.NodeEquation;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
+import org.miller.service.DifferentialEquationCalculationService;
 import org.miller.service.GraphViewService;
 
 public class PrimaryController {
@@ -34,6 +40,8 @@ public class PrimaryController {
   );
   private final ObservableList<Lambda> lambdasList = FXCollections.observableArrayList();
   private final GraphViewService graphViewService = new GraphViewService();
+  private final DifferentialEquationCalculationService calculationService = new DifferentialEquationCalculationService();
+  private final List<Integer> workingColumnIndexes = new ArrayList<>();
   private DigraphEdgeList<StateNode, StateEdge> digraph;
   private String elementsSchemaEquation;
   private int numberOfElements;
@@ -102,7 +110,7 @@ public class PrimaryController {
 
     dialog.showAndWait().ifPresent(name -> {
       this.elementsSchemaEquation = name;
-      this.numberOfElements = SystemReliabilityEvaluator.findNumberOfElements(this.elementsSchemaEquation);
+      this.numberOfElements = Evaluator.findNumberOfElements(this.elementsSchemaEquation);
       graphContainer.getChildren().clear();
 
       initGraphView();
@@ -127,6 +135,8 @@ public class PrimaryController {
 
   private void initLambdaValuesTable() {
 
+    lambdasList.clear();
+
     for (int i = 1; i <= this.numberOfElements; i++) {
 
       lambdasList.add(new Lambda("λ" + i, DEFAULT_LAMBDA_VALUES.getOrDefault("λ" + i, 0d)));
@@ -138,19 +148,53 @@ public class PrimaryController {
     calculationsTable.getColumns().removeIf(col -> Objects.isNull(col.getId()));
     tColumn.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(0)));
     calculationsTable.setEditable(false);
-    for (int i = 1; i <= digraph.vertices().size(); i++) {
+    workingColumnIndexes.clear();
 
-      final int finalIdx = i;
-      TableColumn<ObservableList<Double>, Double> column = new TableColumn<>("P" + i);
-      column.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(finalIdx)));
+    for (var vertex : digraph.vertices().stream().sorted(Comparator.comparingInt(v -> v.element().getId())).collect(Collectors.toList())) {
+
+      TableColumn<ObservableList<Double>, Double> column = new TableColumn<>("P" + vertex.element().getId());
+      column.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(vertex.element().getId() + 1)));
       column.setEditable(false);
       column.setSortable(false);
+      column.setStyle(vertex.element().isWorking() ? "-fx-background-color: #ebffec; -fx-text-fill: black;" : "-fx-background-color: #ffebeb;-fx-text-fill: black;");
       calculationsTable.getColumns().add(column);
+      if(vertex.element().isWorking()){
+
+        workingColumnIndexes.add(vertex.element().getId() + 1);
+      }
     }
+
+    TableColumn<ObservableList<Double>, Double> column = new TableColumn<>("Failure-free Probability");
+    column.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(calculationsTable.getColumns().size()-1)));
+    column.setEditable(false);
+    column.setSortable(false);
+    calculationsTable.getColumns().add(column);
   }
 
   @FXML
   public void calculateEquations(ActionEvent actionEvent) {
 
+    double loverBound = Double.parseDouble(loverBoundInput.getText());
+    double upperBound = Double.parseDouble(upperBoundInput.getText());
+    double step = Double.parseDouble(stepInput.getText());
+
+    double[][] result = calculationService.calculate(loverBound, upperBound, step, equationsTable.getItems(), lambdasList);
+
+    calculationsTable.getItems().clear();
+
+    for (double[] resultRow : result) {
+
+      List<Double> values = DoubleStream.of(resultRow).boxed().collect(Collectors.toList());
+
+      double totalWorkingPValue = 0;
+      for (var indexOfWorking : workingColumnIndexes) {
+
+        totalWorkingPValue += values.get(indexOfWorking);
+      }
+
+      values.add(totalWorkingPValue);
+
+      calculationsTable.getItems().add(FXCollections.observableList(values));
+    }
   }
 }
