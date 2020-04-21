@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.miller.engine.GraphComposer;
 import org.miller.model.NodeEquation;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
@@ -68,10 +67,10 @@ public class GraphViewService {
   private void tryInsertEdge(Digraph<StateNode, StateEdge> graph, StateNode n, Tuple2<StateEdge, StateNode> outcomingEdge) {
     try {
 
-      if(!(n.getId() == 0 && outcomingEdge.getV2().getId() == 0)){
+      if (!(n.getId() == 0 && outcomingEdge.getV2().getId() == 0)) {
 
         int outId = outcomingEdge.getV2().getId();
-        if(outId == 0){
+        if (outId == 0) {
           outId = graph.vertices().stream().map(Vertex::element)
               .filter(v -> v.equals(outcomingEdge.getV2())).findFirst()
               .map(StateNode::getId).orElse(0);
@@ -95,73 +94,5 @@ public class GraphViewService {
     } catch (InvalidVertexException ignored) {
 
     }
-  }
-
-  public List<NodeEquation> getNodeEquations(DigraphEdgeList<StateNode, StateEdge> digraph) {
-
-    List<NodeEquation> nodeEquations = new ArrayList<>();
-    for (Vertex<StateNode> vertex : digraph.vertices().stream().sorted(Comparator.comparingInt(v -> v.element().getId())).collect(Collectors.toList())) {
-
-      var equation = new StringBuilder("dP[" + vertex.element().getId() + "](t)/dt = ");
-
-      var inboundEdges = digraph.incidentEdges(vertex);
-
-      int counter = 0;
-      for (Edge<StateEdge, StateNode> edge : inboundEdges) {
-
-        if (counter != 0) {
-
-          equation.append("+");
-        }
-
-        equation.append(edge.element().getValue()).append("*P[").append(edge.vertices()[0].element().getId()).append("](t)");
-
-        ++counter;
-      }
-
-      var outboundEdges = digraph.outboundEdges(vertex);
-      if (!outboundEdges.isEmpty()) {
-
-        equation.append("-(");
-        counter = 0;
-        for (Edge<StateEdge, StateNode> edge : outboundEdges) {
-
-          if (counter != 0) {
-
-            equation.append("+");
-          }
-
-          equation.append(edge.element().getValue());
-          ++counter;
-        }
-
-        equation.append(")*P[").append(vertex.element().getId()).append("](t)");
-      }
-
-      nodeEquations.add(new NodeEquation(vertex.element().getId(), equation.toString(), vertex.element().isWorking() ? "Works" : "Fail"));
-    }
-
-    nodeEquations.add(new NodeEquation(0, "", ""));
-    nodeEquations.add(new NodeEquation(0, "Probability of failure-free operation:", ""));
-
-    var worksNodes = nodeEquations.stream().filter(nodeEquation -> nodeEquation.getStatus().equals("Works")).collect(Collectors.toList());
-
-    var failureFreeOperationEquation = new StringBuilder("P(t) = ");
-
-    int counter = 0;
-    for (var worksNode : worksNodes) {
-
-      if (counter != 0) {
-
-        failureFreeOperationEquation.append("+");
-      }
-
-      failureFreeOperationEquation.append("P[").append(worksNode.getId()).append("](t)");
-
-      ++counter;
-    }
-    nodeEquations.add(new NodeEquation(0, failureFreeOperationEquation.toString(), ""));
-
-    return nodeEquations;
   }
 }

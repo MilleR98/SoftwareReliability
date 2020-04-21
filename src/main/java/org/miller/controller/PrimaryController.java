@@ -13,6 +13,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -27,6 +30,7 @@ import org.miller.model.NodeEquation;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
 import org.miller.service.DifferentialEquationCalculationService;
+import org.miller.service.EquationsBuilderService;
 import org.miller.service.GraphViewService;
 
 public class PrimaryController {
@@ -38,12 +42,15 @@ public class PrimaryController {
       "λ4", 0.0002d,
       "λ5", 0.0001d
   );
+
   private final ObservableList<Lambda> lambdasList = FXCollections.observableArrayList();
   private final GraphViewService graphViewService = new GraphViewService();
+  private final EquationsBuilderService equationsBuilderService = new EquationsBuilderService();
   private final DifferentialEquationCalculationService calculationService = new DifferentialEquationCalculationService();
   private final List<Integer> workingColumnIndexes = new ArrayList<>();
   private DigraphEdgeList<StateNode, StateEdge> digraph;
-  private String elementsSchemaEquation;
+  private int calculationsCounter;
+
   private int numberOfElements;
   //Graph View Tab
   @FXML
@@ -74,6 +81,13 @@ public class PrimaryController {
   private TextField upperBoundInput;
   @FXML
   private TextField stepInput;
+  //Chart tab
+  @FXML
+  private LineChart<Number, Number> probabilityChart;
+  @FXML
+  private NumberAxis xAxis;
+  @FXML
+  private NumberAxis yAxis;
 
   @FXML
   public void initialize() {
@@ -96,6 +110,8 @@ public class PrimaryController {
     lambdaValueColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setValue(t.getNewValue()));
 
     lambdaTable.setItems(lambdasList);
+
+    initChart();
   }
 
   @FXML
@@ -108,14 +124,14 @@ public class PrimaryController {
     dialog.setHeaderText("Enter elements equation (if the elements are in parallel - (E1 | E2), if sequentially - (E1 & E2).\n"
         + "For example: (E1 | E2) & E3 & E4 - group of parallel E1 and E2 in sequence with E3 and E4.");
 
-    dialog.showAndWait().ifPresent(name -> {
-      this.elementsSchemaEquation = name;
-      this.numberOfElements = Evaluator.findNumberOfElements(this.elementsSchemaEquation);
+    dialog.showAndWait().ifPresent(elementsSchemaEquation -> {
+
+      this.numberOfElements = Evaluator.findNumberOfElements(elementsSchemaEquation);
       graphContainer.getChildren().clear();
 
-      initGraphView();
+      initGraphView(elementsSchemaEquation);
 
-      equationsTable.setItems(FXCollections.observableArrayList(graphViewService.getNodeEquations(digraph)));
+      equationsTable.setItems(FXCollections.observableArrayList(equationsBuilderService.getNodeEquations(digraph)));
 
       initLambdaValuesTable();
 
@@ -123,9 +139,9 @@ public class PrimaryController {
     });
   }
 
-  private void initGraphView() {
+  private void initGraphView(String elementsSchemaEquation) {
 
-    var graphViewPair = graphViewService.createGraphView(this.elementsSchemaEquation);
+    var graphViewPair = graphViewService.createGraphView(elementsSchemaEquation);
     var graphPanel = graphViewPair.getV1();
     digraph = graphViewPair.getV2();
     graphPanel.resize(graphContainer.getPrefWidth(), graphContainer.getPrefHeight());
@@ -159,14 +175,14 @@ public class PrimaryController {
       column.setSortable(false);
       column.setStyle(vertex.element().isWorking() ? "-fx-background-color: #ebffec; -fx-text-fill: black;" : "-fx-background-color: #ffebeb;-fx-text-fill: black;");
       calculationsTable.getColumns().add(column);
-      if(vertex.element().isWorking()){
+      if (vertex.element().isWorking()) {
 
         workingColumnIndexes.add(vertex.element().getId() + 1);
       }
     }
 
     TableColumn<ObservableList<Double>, Double> column = new TableColumn<>("Failure-free Probability");
-    column.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(calculationsTable.getColumns().size()-1)));
+    column.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(calculationsTable.getColumns().size() - 1)));
     column.setEditable(false);
     column.setSortable(false);
     calculationsTable.getColumns().add(column);
@@ -183,6 +199,9 @@ public class PrimaryController {
 
     calculationsTable.getItems().clear();
 
+    XYChart.Series<Number, Number> dataSeries = new XYChart.Series<>();
+    dataSeries.setName("P(t)" + calculationsCounter++);
+
     for (double[] resultRow : result) {
 
       List<Double> values = DoubleStream.of(resultRow).boxed().collect(Collectors.toList());
@@ -196,6 +215,24 @@ public class PrimaryController {
       values.add(totalWorkingPValue);
 
       calculationsTable.getItems().add(FXCollections.observableList(values));
+
+      dataSeries.getData().add(new XYChart.Data<>(resultRow[0], totalWorkingPValue));
     }
+
+    probabilityChart.getData().add(dataSeries);
+  }
+
+  private void initChart() {
+
+    xAxis.setLabel("t");
+    yAxis.setLabel("P(t)");
+    probabilityChart.setTitle("Probability of failure-free operation");
+    probabilityChart.setCreateSymbols(false);
+  }
+
+  @FXML
+  public void clearChartData(ActionEvent actionEvent){
+
+    probabilityChart.getData().clear();
   }
 }
