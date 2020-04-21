@@ -149,6 +149,7 @@ public class PrimaryController {
     tColumn.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(0)));
     calculationsTable.setEditable(false);
     workingColumnIndexes.clear();
+    calculationsTable.getItems().clear();
 
     for (var vertex : digraph.vertices().stream().sorted(Comparator.comparingInt(v -> v.element().getId())).collect(Collectors.toList())) {
 
