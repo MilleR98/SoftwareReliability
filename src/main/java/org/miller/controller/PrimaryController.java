@@ -49,7 +49,7 @@ public class PrimaryController {
   private final DifferentialEquationCalculationService calculationService = new DifferentialEquationCalculationService();
   private final List<Integer> workingColumnIndexes = new ArrayList<>();
   private DigraphEdgeList<StateNode, StateEdge> digraph;
-  private int calculationsCounter;
+  private int calculationsCounter = 1;
 
   private int numberOfElements;
   //Graph View Tab
@@ -233,6 +233,7 @@ public class PrimaryController {
   @FXML
   public void clearChartData(ActionEvent actionEvent){
 
+    calculationsCounter = 1;
     probabilityChart.getData().clear();
   }
 }

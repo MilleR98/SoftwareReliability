@@ -2,7 +2,6 @@ package org.miller.service;
 
 import com.brunomnsilva.smartgraph.graph.Digraph;
 import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
-import com.brunomnsilva.smartgraph.graph.Edge;
 import com.brunomnsilva.smartgraph.graph.InvalidEdgeException;
 import com.brunomnsilva.smartgraph.graph.InvalidVertexException;
 import com.brunomnsilva.smartgraph.graph.Vertex;
@@ -10,12 +9,8 @@ import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrateg
 import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 import com.brunomnsilva.smartgraph.graphview.SmartGraphProperties;
 import groovy.lang.Tuple2;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.miller.model.NodeEquation;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
 
