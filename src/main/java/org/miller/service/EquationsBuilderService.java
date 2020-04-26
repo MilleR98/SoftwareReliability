@@ -35,11 +35,11 @@ public class EquationsBuilderService {
   private void addFailureFreeProbabilityEquation(List<NodeEquation> nodeEquations) {
 
     nodeEquations.add(new NodeEquation(0, "", ""));
-    nodeEquations.add(new NodeEquation(0, "Probability of failure-free operation:", ""));
+    nodeEquations.add(new NodeEquation(0, "System readiness factor:", ""));
 
     var worksNodes = nodeEquations.stream().filter(nodeEquation -> nodeEquation.getStatus().equals("Works")).collect(Collectors.toList());
 
-    var failureFreeOperationEquation = new StringBuilder("P(t) = ");
+    var failureFreeOperationEquation = new StringBuilder("K(t) = ");
 
     int counter = 0;
     for (var worksNode : worksNodes) {

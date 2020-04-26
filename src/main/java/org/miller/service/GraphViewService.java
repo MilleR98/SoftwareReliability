@@ -30,6 +30,21 @@ public class GraphViewService {
     var rootNode = systemGraphComposer.buildSystemStatesGraph(elementsSchemaEquation, indexOfOneTimeRepairElement);
     buildParts(Set.of(rootNode), graph);
 
+    setRepairedEdges(graph);
+
+    var smartGraphProperties = new SmartGraphProperties(getClass().getClassLoader().getResourceAsStream("smartgraph.properties"));
+    var graphView = new SmartGraphPanel<>(graph, smartGraphProperties, new SmartCircularSortedPlacementStrategy());
+    graphView.getStylesheets().add(getClass().getClassLoader().getResource("smartgraph.css").toExternalForm());
+    //graphView.setAutomaticLayout(true);
+
+    graph.vertices().stream()
+        .filter(stateNodeVertex -> !stateNodeVertex.element().isWorking())
+        .forEach(stateNodeVertex -> graphView.getStylableVertex(stateNodeVertex).setStyleClass("not-working-state"));
+
+    return new Tuple2<>(graphView, graph);
+  }
+
+  private void setRepairedEdges(DigraphEdgeList<StateNode, StateEdge> graph) {
     graph.vertices().stream()
         .filter(stateNodeVertex -> !stateNodeVertex.element().isWorking())
         .map(Vertex::element)
@@ -51,7 +66,7 @@ public class GraphViewService {
                   .findFirst().ifPresent(node -> {
 
                 var repairEdge = new StateEdge();
-                repairEdge.setValue("µ[" + index + "]");
+                repairEdge.setValue("μ[" + index + "]");
                 repairEdge.setLabel("(" + stateNode.getId() + "->" + node.getId() + ") ");
 
                 try {
@@ -65,17 +80,6 @@ public class GraphViewService {
           }
 
         });
-
-    var smartGraphProperties = new SmartGraphProperties(getClass().getClassLoader().getResourceAsStream("smartgraph.properties"));
-    var graphView = new SmartGraphPanel<>(graph, smartGraphProperties, new SmartCircularSortedPlacementStrategy());
-    graphView.getStylesheets().add(getClass().getClassLoader().getResource("smartgraph.css").toExternalForm());
-    //graphView.setAutomaticLayout(true);
-
-    graph.vertices().stream()
-        .filter(stateNodeVertex -> !stateNodeVertex.element().isWorking())
-        .forEach(stateNodeVertex -> graphView.getStylableVertex(stateNodeVertex).setStyleClass("not-working-state"));
-
-    return new Tuple2<>(graphView, graph);
   }
 
   private void buildParts(Set<StateNode> nodes, Digraph<StateNode, StateEdge> graph) {
@@ -114,11 +118,11 @@ public class GraphViewService {
         graph.insertEdge(currentNode, outboundEdge.getV2(), outboundEdge.getV1());
 
         if ((outboundEdge.getV2().isWorking() && currentNode.isWorking())
-            || (!outboundEdge.getV2().getOutboundEdges().isEmpty() && outboundEdge.getV2().getOutboundEdges().stream().noneMatch(n -> n.getV1().getValue().contains("µ"))
+            || (!outboundEdge.getV2().getOutboundEdges().isEmpty() && outboundEdge.getV2().getOutboundEdges().stream().noneMatch(n -> n.getV1().getValue().contains("μ"))
             && currentNode.isWorking())) {
 
           var reverseEdge = new StateEdge();
-          reverseEdge.setValue(outboundEdge.getV1().getValue().replace('λ', 'µ'));
+          reverseEdge.setValue(outboundEdge.getV1().getValue().replace('λ', 'μ'));
           reverseEdge.setLabel("(" + outId + "->" + currentNode.getId() + ") ");
           graph.insertEdge(outboundEdge.getV2(), currentNode, reverseEdge);
         }

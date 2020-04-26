@@ -24,16 +24,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
-import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import org.miller.engine.Evaluator;
-import org.miller.model.Lambda;
 import org.miller.model.NodeEquation;
+import org.miller.model.Param;
 import org.miller.model.StateEdge;
 import org.miller.model.StateNode;
 import org.miller.service.DifferentialEquationCalculationService;
@@ -50,7 +48,8 @@ public class PrimaryController {
       "λ5", 0.0001d
   );
 
-  private final ObservableList<Lambda> lambdasList = FXCollections.observableArrayList();
+  private final ObservableList<Param> lambdasList = FXCollections.observableArrayList();
+  private final ObservableList<Param> miList = FXCollections.observableArrayList();
   private final GraphViewService graphViewService = new GraphViewService();
   private final EquationsBuilderService equationsBuilderService = new EquationsBuilderService();
   private final DifferentialEquationCalculationService calculationService = new DifferentialEquationCalculationService();
@@ -73,11 +72,17 @@ public class PrimaryController {
   private TableColumn<NodeEquation, Integer> idColumn;
   //Calculations Tab
   @FXML
-  private TableView<Lambda> lambdaTable;
+  private TableView<Param> lambdaTable;
   @FXML
-  private TableColumn<Lambda, String> lambdaLabelColumn;
+  private TableColumn<Param, String> lambdaLabelColumn;
   @FXML
-  private TableColumn<Lambda, Double> lambdaValueColumn;
+  private TableColumn<Param, Double> lambdaValueColumn;
+  @FXML
+  private TableView<Param> miTable;
+  @FXML
+  private TableColumn<Param, String> miLabelColumn;
+  @FXML
+  private TableColumn<Param, Double> miValueColumn;
   @FXML
   private TableView<ObservableList<Double>> calculationsTable;
   @FXML
@@ -118,6 +123,16 @@ public class PrimaryController {
 
     lambdaTable.setItems(lambdasList);
 
+    miTable.setEditable(true);
+    miValueColumn.setEditable(true);
+    miValueColumn.setOnEditCommit(t -> t.getRowValue().setValue(t.getNewValue()));
+    miLabelColumn.setCellValueFactory(new PropertyValueFactory<>("label"));
+    miValueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
+    miValueColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+    miValueColumn.setOnEditCommit(t -> t.getTableView().getItems().get(t.getTablePosition().getRow()).setValue(t.getNewValue()));
+
+    miTable.setItems(miList);
+
     initChart();
   }
 
@@ -127,8 +142,7 @@ public class PrimaryController {
     Dialog<Tuple2<String, Integer>> dialog = new Dialog<>();
     dialog.setTitle("New elements schema");
     dialog.setHeaderText("Enter elements equation (if the elements are in parallel - (E1 | E2), if sequentially - (E1 & E2).\n"
-        + "For example: (E1 | E2) & E3 & E4 - group of parallel E1 and E2 in sequence with E3 and E4.\n"
-        + "Element with one repair mark should be marked as ^E");
+        + "For example: (E1 | E2) & E3 & E4 - group of parallel E1 and E2 in sequence with E3 and E4.");
     dialog.setResizable(false);
 
     var label1 = new Label("Elements schema: ");
@@ -186,10 +200,12 @@ public class PrimaryController {
   private void initLambdaValuesTable() {
 
     lambdasList.clear();
+    miList.clear();
 
     for (int i = 1; i <= this.numberOfElements; i++) {
 
-      lambdasList.add(new Lambda("λ" + i, DEFAULT_LAMBDA_VALUES.getOrDefault("λ" + i, 0d)));
+      lambdasList.add(new Param("λ" + i, DEFAULT_LAMBDA_VALUES.getOrDefault("λ" + i, 0d)));
+      miList.add(new Param("μ" + i, 0d));
     }
   }
 
@@ -215,7 +231,7 @@ public class PrimaryController {
       }
     }
 
-    TableColumn<ObservableList<Double>, Double> column = new TableColumn<>("Failure-free Probability");
+    TableColumn<ObservableList<Double>, Double> column = new TableColumn<>("System readiness factor");
     column.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue().get(calculationsTable.getColumns().size() - 1)));
     column.setEditable(false);
     column.setSortable(false);
@@ -229,12 +245,12 @@ public class PrimaryController {
     double upperBound = Double.parseDouble(upperBoundInput.getText());
     double step = Double.parseDouble(stepInput.getText());
 
-    double[][] result = calculationService.calculate(loverBound, upperBound, step, equationsTable.getItems(), lambdasList);
+    double[][] result = calculationService.calculate(loverBound, upperBound, step, equationsTable.getItems(), lambdasList, miList);
 
     calculationsTable.getItems().clear();
 
     XYChart.Series<Number, Number> dataSeries = new XYChart.Series<>();
-    dataSeries.setName("P(t)" + calculationsCounter++);
+    dataSeries.setName("K(t)" + calculationsCounter++);
 
     for (double[] resultRow : result) {
 
@@ -260,7 +276,7 @@ public class PrimaryController {
 
     xAxis.setLabel("t");
     yAxis.setLabel("P(t)");
-    probabilityChart.setTitle("Probability of failure-free operation");
+    probabilityChart.setTitle("System readiness factor");
     probabilityChart.setCreateSymbols(false);
   }
 

@@ -33,14 +33,15 @@ public class Evaluator {
     return Boolean.parseBoolean(shellEvaluator.evaluate(elementsSchemaEquation).toString());
   }
 
-  public double evaluateFunctions(String function, double[] lambdas, double[] dxdy, double[] y) {
+  public void evaluateFunctions(String function, double[] lambdas, double[] mis, double[] dxdy, double[] y) {
 
     binding.setVariable("λ", lambdas);
+    binding.setVariable("μ", mis);
     binding.setVariable("dP", dxdy);
     binding.setVariable("P", y);
 
     String pureExpression = function.replace("(t)", "").replace("/dt", "");
 
-    return Double.parseDouble(shellEvaluator.evaluate(pureExpression).toString());
+    shellEvaluator.evaluate(pureExpression);
   }
 }

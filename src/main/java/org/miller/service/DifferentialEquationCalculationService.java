@@ -4,8 +4,9 @@ import flanagan.integration.DerivnFunction;
 import flanagan.integration.RungeKutta;
 import java.util.List;
 import java.util.stream.Collectors;
+import javafx.collections.ObservableList;
 import org.miller.engine.Evaluator;
-import org.miller.model.Lambda;
+import org.miller.model.Param;
 import org.miller.model.NodeEquation;
 
 public class DifferentialEquationCalculationService {
@@ -13,7 +14,7 @@ public class DifferentialEquationCalculationService {
   private final OrdinaryDefFunction defFunction = new OrdinaryDefFunction();
 
   public double[][] calculate(double loverBound, double upperBound, double step,
-      List<NodeEquation> equations, List<Lambda> lambdasList) {
+      List<NodeEquation> equations, List<Param> lambdasList, ObservableList<Param> miList) {
 
     double[] y0 = new double[equations.size() - 3];
     y0[0] = 1;
@@ -32,7 +33,8 @@ public class DifferentialEquationCalculationService {
       points[counter++] = i;
     }
 
-    defFunction.setLambdas(lambdasList.stream().map(Lambda::getValue).mapToDouble(Double::doubleValue).toArray());
+    defFunction.setLambdas(lambdasList.stream().map(Param::getValue).mapToDouble(Double::doubleValue).toArray());
+    defFunction.setMis(miList.stream().map(Param::getValue).mapToDouble(Double::doubleValue).toArray());
     defFunction.setEquations(equations);
 
     double[][] result = rungeKutta.fourthOrder(defFunction, points);
@@ -51,12 +53,13 @@ public class DifferentialEquationCalculationService {
   static class OrdinaryDefFunction implements DerivnFunction {
 
     private double[] lambdas;
+    private double[] mis;
     private String equationsStr;
 
     public double[] derivn(double x, double[] y) {
       double[] dydx = new double[y.length];
 
-      Evaluator.getInstance().evaluateFunctions(equationsStr, lambdas, dydx, y);
+      Evaluator.getInstance().evaluateFunctions(equationsStr, lambdas, mis, dydx, y);
 
       return dydx;
     }
@@ -72,6 +75,10 @@ public class DifferentialEquationCalculationService {
           .takeWhile(eq -> !eq.getEquation().equals(""))
           .map(NodeEquation::getEquation)
           .collect(Collectors.joining(";", "", ";"));
+    }
+
+    public void setMis(double[] mis) {
+      this.mis = mis;
     }
   }
 }

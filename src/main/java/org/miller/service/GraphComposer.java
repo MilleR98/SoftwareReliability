@@ -59,7 +59,7 @@ public class GraphComposer {
 
         addChildNodes(repairedState, elementsSchemaEquation, repairedStateNode);
 
-        var childNodePair = new Tuple2<>(new StateEdge(null, "µ[" + indexWithOneRepair + "]"), repairedStateNode);
+        var childNodePair = new Tuple2<>(new StateEdge(null, "μ[" + indexWithOneRepair + "]"), repairedStateNode);
         stateNode.getOutboundEdges().add(childNodePair);
       }else if(stateNode.getState()[indexWithOneRepair]){
 

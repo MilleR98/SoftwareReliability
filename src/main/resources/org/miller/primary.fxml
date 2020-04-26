@@ -96,12 +96,22 @@
                 </GridPane>
                 <HBox prefHeight="750.0">
                   <children>
-                    <TableView fx:id="lambdaTable" minWidth="155.0" prefWidth="170.0">
-                      <columns>
-                        <TableColumn fx:id="lambdaLabelColumn" editable="false" minWidth="55.0" prefWidth="55.0" sortable="false" text="#λ" />
-                        <TableColumn fx:id="lambdaValueColumn" editable="true" minWidth="100.0" prefWidth="75.0" sortable="false" text="λ value" />
-                      </columns>
-                    </TableView>
+                              <VBox prefHeight="200.0" prefWidth="100.0">
+                                 <children>
+                          <TableView fx:id="lambdaTable" minWidth="155.0" prefWidth="170.0">
+                            <columns>
+                              <TableColumn fx:id="lambdaLabelColumn" editable="false" minWidth="55.0" prefWidth="55.0" sortable="false" text="#λ" />
+                              <TableColumn fx:id="lambdaValueColumn" editable="true" minWidth="100.0" prefWidth="75.0" sortable="false" text="λ value" />
+                            </columns>
+                          </TableView>
+                                    <TableView fx:id="miTable" minWidth="155.0" prefWidth="170.0">
+                                       <columns>
+                                          <TableColumn fx:id="miLabelColumn" editable="false" minWidth="55.0" prefWidth="55.0" sortable="false" text="#μ" />
+                                          <TableColumn fx:id="miValueColumn" editable="true" minWidth="100.0" prefWidth="75.0" sortable="false" text="μ value" />
+                                       </columns>
+                                    </TableView>
+                                 </children>
+                              </VBox>
                     <TableView fx:id="calculationsTable" minWidth="830.0" prefWidth="1500.0">
                       <columns>
                         <TableColumn id="tColumn" fx:id="tColumn" editable="false" prefWidth="75.0" sortable="false" text="t" />
@@ -120,7 +130,7 @@
           <content>
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
               <children>
-                        <Button mnemonicParsing="false" text="Clear data" onAction="#clearChartData" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Button mnemonicParsing="false" onAction="#clearChartData" text="Clear data" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                 <LineChart fx:id="probabilityChart" layoutX="35.0" layoutY="62.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
                   <xAxis>
                     <NumberAxis side="BOTTOM" fx:id="xAxis" />
