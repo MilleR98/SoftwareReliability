@@ -48,6 +48,14 @@ public class PrimaryController {
       "λ5", 0.0001d
   );
 
+  private static final Map<String, Double> DEFAULT_MI_VALUES = Map.of(
+      "μ1", 0.05d,
+      "μ2", 0.08d,
+      "μ3", 0.04d,
+      "μ4", 0.07d,
+      "μ5", 0.06d
+  );
+
   private final ObservableList<Param> lambdasList = FXCollections.observableArrayList();
   private final ObservableList<Param> miList = FXCollections.observableArrayList();
   private final GraphViewService graphViewService = new GraphViewService();
@@ -166,7 +174,7 @@ public class PrimaryController {
 
       if (b == buttonTypeOk) {
 
-        return Tuple2.tuple(text1.getText(), Integer.parseInt(text2.getText()));
+        return new Tuple2<>(text1.getText(), Integer.parseInt(text2.getText()));
       }
 
       return null;
@@ -174,10 +182,10 @@ public class PrimaryController {
 
     dialog.showAndWait().ifPresent(pair -> {
 
-      this.numberOfElements = Evaluator.findNumberOfElements(pair.getV1());
+      this.numberOfElements = Evaluator.findNumberOfElements(pair.getFirst());
       graphContainer.getChildren().clear();
 
-      initGraphView(pair.getV1(), pair.getV2());
+      initGraphView(pair.getFirst(), pair.getSecond());
 
       equationsTable.setItems(FXCollections.observableArrayList(equationsBuilderService.getNodeEquations(digraph)));
 
@@ -190,8 +198,8 @@ public class PrimaryController {
   private void initGraphView(String elementsSchemaEquation, int indexOfOneTimeRepairElement) {
 
     var graphViewPair = graphViewService.createGraphView(elementsSchemaEquation, indexOfOneTimeRepairElement);
-    var graphPanel = graphViewPair.getV1();
-    digraph = graphViewPair.getV2();
+    var graphPanel = graphViewPair.getFirst();
+    digraph = graphViewPair.getSecond();
     graphPanel.resize(graphContainer.getPrefWidth(), graphContainer.getPrefHeight());
     graphContainer.getChildren().add(graphPanel);
     graphPanel.init();
@@ -205,7 +213,7 @@ public class PrimaryController {
     for (int i = 1; i <= this.numberOfElements; i++) {
 
       lambdasList.add(new Param("λ" + i, DEFAULT_LAMBDA_VALUES.getOrDefault("λ" + i, 0d)));
-      miList.add(new Param("μ" + i, 0d));
+      miList.add(new Param("μ" + i, DEFAULT_MI_VALUES.getOrDefault("μ" + i, 0d))  );
     }
   }
 

@@ -35,7 +35,7 @@ public class GraphViewService {
     var smartGraphProperties = new SmartGraphProperties(getClass().getClassLoader().getResourceAsStream("smartgraph.properties"));
     var graphView = new SmartGraphPanel<>(graph, smartGraphProperties, new SmartCircularSortedPlacementStrategy());
     graphView.getStylesheets().add(getClass().getClassLoader().getResource("smartgraph.css").toExternalForm());
-    //graphView.setAutomaticLayout(true);
+    graphView.setAutomaticLayout(true);
 
     graph.vertices().stream()
         .filter(stateNodeVertex -> !stateNodeVertex.element().isWorking())
@@ -93,38 +93,38 @@ public class GraphViewService {
 
       for (var outboundEdge : stateNode.getOutboundEdges()) {
 
-        tryInsertVertex(graph, outboundEdge.getV2());
+        tryInsertVertex(graph, outboundEdge.getSecond());
 
         tryInsertEdge(graph, stateNode, outboundEdge);
       }
 
-      buildParts(stateNode.getOutboundEdges().stream().map(Tuple2::getV2).collect(Collectors.toSet()), graph);
+      buildParts(stateNode.getOutboundEdges().stream().map(Tuple2::getSecond).collect(Collectors.toSet()), graph);
     }
   }
 
   private void tryInsertEdge(Digraph<StateNode, StateEdge> graph, StateNode currentNode, Tuple2<StateEdge, StateNode> outboundEdge) {
     try {
 
-      if (!(currentNode.getId() == 0 && outboundEdge.getV2().getId() == 0)) {
+      if (!(currentNode.getId() == 0 && outboundEdge.getSecond().getId() == 0)) {
 
-        int outId = outboundEdge.getV2().getId();
+        int outId = outboundEdge.getSecond().getId();
         if (outId == 0) {
           outId = graph.vertices().stream().map(Vertex::element)
-              .filter(v -> v.equals(outboundEdge.getV2())).findFirst()
+              .filter(v -> v.equals(outboundEdge.getSecond())).findFirst()
               .map(StateNode::getId).orElse(0);
         }
 
-        outboundEdge.getV1().setLabel("(" + currentNode.getId() + "->" + outId + ") ");
-        graph.insertEdge(currentNode, outboundEdge.getV2(), outboundEdge.getV1());
+        outboundEdge.getFirst().setLabel("(" + currentNode.getId() + "->" + outId + ") ");
+        graph.insertEdge(currentNode, outboundEdge.getSecond(), outboundEdge.getFirst());
 
-        if ((outboundEdge.getV2().isWorking() && currentNode.isWorking())
-            || (!outboundEdge.getV2().getOutboundEdges().isEmpty() && outboundEdge.getV2().getOutboundEdges().stream().noneMatch(n -> n.getV1().getValue().contains("μ"))
+        if ((outboundEdge.getSecond().isWorking() && currentNode.isWorking())
+            || (!outboundEdge.getSecond().getOutboundEdges().isEmpty() && outboundEdge.getSecond().getOutboundEdges().stream().noneMatch(n -> n.getFirst().getValue().contains("μ"))
             && currentNode.isWorking())) {
 
           var reverseEdge = new StateEdge();
-          reverseEdge.setValue(outboundEdge.getV1().getValue().replace('λ', 'μ'));
+          reverseEdge.setValue(outboundEdge.getFirst().getValue().replace('λ', 'μ'));
           reverseEdge.setLabel("(" + outId + "->" + currentNode.getId() + ") ");
-          graph.insertEdge(outboundEdge.getV2(), currentNode, reverseEdge);
+          graph.insertEdge(outboundEdge.getSecond(), currentNode, reverseEdge);
         }
       }
 
