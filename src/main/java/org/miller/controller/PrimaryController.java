@@ -1,6 +1,7 @@
 package org.miller.controller;
 
 import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
+import groovy.lang.Tuple2;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -16,6 +17,10 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -23,6 +28,8 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
+import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 import org.miller.engine.Evaluator;
 import org.miller.model.Lambda;
@@ -117,19 +124,46 @@ public class PrimaryController {
   @FXML
   public void openAddSchemaModal(ActionEvent actionEvent) {
 
-    TextInputDialog dialog = new TextInputDialog();
-    dialog.setWidth(200);
-    dialog.setWidth(150);
+    Dialog<Tuple2<String, Integer>> dialog = new Dialog<>();
     dialog.setTitle("New elements schema");
     dialog.setHeaderText("Enter elements equation (if the elements are in parallel - (E1 | E2), if sequentially - (E1 & E2).\n"
-        + "For example: (E1 | E2) & E3 & E4 - group of parallel E1 and E2 in sequence with E3 and E4.");
+        + "For example: (E1 | E2) & E3 & E4 - group of parallel E1 and E2 in sequence with E3 and E4.\n"
+        + "Element with one repair mark should be marked as ^E");
+    dialog.setResizable(false);
 
-    dialog.showAndWait().ifPresent(elementsSchemaEquation -> {
+    var label1 = new Label("Elements schema: ");
+    var label2 = new Label("Element with one repair: ");
+    TextField text1 = new TextField();
 
-      this.numberOfElements = Evaluator.findNumberOfElements(elementsSchemaEquation);
+    TextField text2 = new TextField();
+
+    var grid = new GridPane();
+    grid.add(label1, 1, 1);
+    grid.add(text1, 2, 1);
+    grid.add(label2, 1, 2);
+    grid.add(text2, 2, 2);
+    grid.setPrefWidth(dialog.getWidth());
+    dialog.getDialogPane().setContent(grid);
+
+    ButtonType buttonTypeOk = new ButtonType("OK", ButtonData.OK_DONE);
+    dialog.getDialogPane().getButtonTypes().add(buttonTypeOk);
+
+    dialog.setResultConverter(b -> {
+
+      if (b == buttonTypeOk) {
+
+        return Tuple2.tuple(text1.getText(), Integer.parseInt(text2.getText()));
+      }
+
+      return null;
+    });
+
+    dialog.showAndWait().ifPresent(pair -> {
+
+      this.numberOfElements = Evaluator.findNumberOfElements(pair.getV1());
       graphContainer.getChildren().clear();
 
-      initGraphView(elementsSchemaEquation);
+      initGraphView(pair.getV1(), pair.getV2());
 
       equationsTable.setItems(FXCollections.observableArrayList(equationsBuilderService.getNodeEquations(digraph)));
 
@@ -139,9 +173,9 @@ public class PrimaryController {
     });
   }
 
-  private void initGraphView(String elementsSchemaEquation) {
+  private void initGraphView(String elementsSchemaEquation, int indexOfOneTimeRepairElement) {
 
-    var graphViewPair = graphViewService.createGraphView(elementsSchemaEquation);
+    var graphViewPair = graphViewService.createGraphView(elementsSchemaEquation, indexOfOneTimeRepairElement);
     var graphPanel = graphViewPair.getV1();
     digraph = graphViewPair.getV2();
     graphPanel.resize(graphContainer.getPrefWidth(), graphContainer.getPrefHeight());
@@ -231,7 +265,7 @@ public class PrimaryController {
   }
 
   @FXML
-  public void clearChartData(ActionEvent actionEvent){
+  public void clearChartData(ActionEvent actionEvent) {
 
     calculationsCounter = 1;
     probabilityChart.getData().clear();

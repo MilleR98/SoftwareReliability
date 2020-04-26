@@ -3,7 +3,7 @@
 }
 
 .vertex {
-  -fx-stroke-width: 5;
+  -fx-stroke-width: 3;
   -fx-padding: 20;
   -fx-stroke: #61B5F1;
   -fx-stroke-type: inside; /* you should keep this for vertex.radius to hold */
@@ -12,7 +12,7 @@
 
 .vertex-label {
   -fx-padding: 0 0 0 30;
-  -fx-font: bold 10pt "sans-serif";
+  -fx-font: bold 7pt "sans-serif";
 }
 
 .edge {
@@ -25,7 +25,7 @@
 }
 
 .edge-label {
-  -fx-font: normal 10pt "sans-serif";
+  -fx-font: normal 7pt "sans-serif";
 }
 
 .arrow {
