@@ -142,8 +142,8 @@ public class PrimaryController {
   private void initGraphView(String elementsSchemaEquation) {
 
     var graphViewPair = graphViewService.createGraphView(elementsSchemaEquation);
-    var graphPanel = graphViewPair.getV1();
-    digraph = graphViewPair.getV2();
+    var graphPanel = graphViewPair.getFirst();
+    digraph = graphViewPair.getSecond();
     graphPanel.resize(graphContainer.getPrefWidth(), graphContainer.getPrefHeight());
     graphContainer.getChildren().add(graphPanel);
     graphPanel.init();

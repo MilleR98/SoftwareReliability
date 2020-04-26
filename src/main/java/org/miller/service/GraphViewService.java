@@ -50,28 +50,28 @@ public class GraphViewService {
 
       for (var outboundEdge : stateNode.getOutboundEdges()) {
 
-        tryInsertVertex(graph, outboundEdge.getV2());
+        tryInsertVertex(graph, outboundEdge.getSecond());
 
         tryInsertEdge(graph, stateNode, outboundEdge);
       }
 
-      buildParts(stateNode.getOutboundEdges().stream().map(Tuple2::getV2).collect(Collectors.toSet()), graph);
+      buildParts(stateNode.getOutboundEdges().stream().map(Tuple2::getSecond).collect(Collectors.toSet()), graph);
     }
   }
 
   private void tryInsertEdge(Digraph<StateNode, StateEdge> graph, StateNode n, Tuple2<StateEdge, StateNode> outcomingEdge) {
     try {
 
-      if (!(n.getId() == 0 && outcomingEdge.getV2().getId() == 0)) {
+      if (!(n.getId() == 0 && outcomingEdge.getSecond().getId() == 0)) {
 
-        int outId = outcomingEdge.getV2().getId();
+        int outId = outcomingEdge.getSecond().getId();
         if (outId == 0) {
           outId = graph.vertices().stream().map(Vertex::element)
-              .filter(v -> v.equals(outcomingEdge.getV2())).findFirst()
+              .filter(v -> v.equals(outcomingEdge.getSecond())).findFirst()
               .map(StateNode::getId).orElse(0);
         }
-        outcomingEdge.getV1().setLabel("(" + n.getId() + "->" + outId + ") ");
-        graph.insertEdge(n, outcomingEdge.getV2(), outcomingEdge.getV1());
+        outcomingEdge.getFirst().setLabel("(" + n.getId() + "->" + outId + ") ");
+        graph.insertEdge(n, outcomingEdge.getSecond(), outcomingEdge.getFirst());
       }
 
     } catch (InvalidEdgeException ignored) {
