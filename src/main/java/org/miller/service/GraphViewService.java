@@ -35,7 +35,7 @@ public class GraphViewService {
     var smartGraphProperties = new SmartGraphProperties(getClass().getClassLoader().getResourceAsStream("smartgraph.properties"));
     var graphView = new SmartGraphPanel<>(graph, smartGraphProperties, new SmartCircularSortedPlacementStrategy());
     graphView.getStylesheets().add(getClass().getClassLoader().getResource("smartgraph.css").toExternalForm());
-    graphView.setAutomaticLayout(true);
+    //graphView.setAutomaticLayout(true);
 
     graph.vertices().stream()
         .filter(stateNodeVertex -> !stateNodeVertex.element().isWorking())
@@ -117,9 +117,9 @@ public class GraphViewService {
         outboundEdge.getFirst().setLabel("(" + currentNode.getId() + "->" + outId + ") ");
         graph.insertEdge(currentNode, outboundEdge.getSecond(), outboundEdge.getFirst());
 
-        if ((outboundEdge.getSecond().isWorking() && currentNode.isWorking())
+        if (((outboundEdge.getSecond().isWorking() && currentNode.isWorking())
             || (!outboundEdge.getSecond().getOutboundEdges().isEmpty() && outboundEdge.getSecond().getOutboundEdges().stream().noneMatch(n -> n.getFirst().getValue().contains("μ"))
-            && currentNode.isWorking())) {
+            && currentNode.isWorking())) && !outboundEdge.getFirst().getValue().contains(Integer.toString(currentNode.getRepairedIndex()))) {
 
           var reverseEdge = new StateEdge();
           reverseEdge.setValue(outboundEdge.getFirst().getValue().replace('λ', 'μ'));

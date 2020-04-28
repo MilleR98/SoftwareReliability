@@ -50,10 +50,10 @@ public class PrimaryController {
 
   private static final Map<String, Double> DEFAULT_MI_VALUES = Map.of(
       "μ1", 0.05d,
-      "μ2", 0.08d,
-      "μ3", 0.04d,
-      "μ4", 0.07d,
-      "μ5", 0.06d
+      "μ2", 0.04d,
+      "μ3", 0.03d,
+      "μ4", 0.06d,
+      "μ5", 0.07d
   );
 
   private final ObservableList<Param> lambdasList = FXCollections.observableArrayList();
